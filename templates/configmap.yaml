@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "local-proxy-v4tov6.fullname" . }}
+  labels:
+    {{- include "local-proxy-v4tov6.labels" . | nindent 4 }}
+data:
+  proxy-config.txt: |
+{{- if .Values.proxyConfigRaw }}
+{{ .Values.proxyConfigRaw | indent 4 }}
+{{- else }}
+    # Generated from Helm values
+    # Format: LOCAL_PORT:IPV6_ADDRESS:REMOTE_PORT
+{{- range .Values.proxies }}
+    {{ .localPort }}:{{ .ipv6Address }}:{{ .remotePort }}
+{{- end }}
+{{- end }}
+  start-proxies.sh: |
+    #!/bin/sh
+    echo "Starting IPv4 to IPv6 socat proxies on localhost..."
+
+    # Read configuration file
+    while IFS=':' read -r local_port ipv6_addr remote_port; do
+      # Skip empty lines and comments
+      [ -z "$local_port" ] || [ "${local_port#\#}" != "$local_port" ] && continue
+
+      echo "Starting proxy: localhost:$local_port -> [$ipv6_addr]:$remote_port"
+      socat "TCP4-LISTEN:$local_port,bind=127.0.0.1,fork,reuseaddr" "TCP6:[$ipv6_addr]:$remote_port" &
+
+      # Store PID for cleanup
+      echo $! >> /tmp/socat.pids
+    done < /config/proxy-config.txt
+
+    # Function to cleanup on exit
+    cleanup() {
+      echo "Shutting down proxies..."
+      if [ -f /tmp/socat.pids ]; then
+        while read pid; do
+          kill $pid 2>/dev/null || true
+        done < /tmp/socat.pids
+        rm -f /tmp/socat.pids
+      fi
+      exit 0
+    }
+
+    # Set up signal handlers
+    trap cleanup TERM INT
+
+    echo "All proxies started. Waiting..."
+    wait
