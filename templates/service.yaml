@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "local-proxy-v4tov6.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "local-proxy-v4tov6.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "local-proxy-v4tov6.selectorLabels" . | nindent 4 }}
+  ports:
+{{- range .Values.proxies }}
+  - name: port-{{ .localPort }}
+    port: {{ .localPort }}
+    targetPort: {{ .localPort }}
+    protocol: TCP
+{{- end }}

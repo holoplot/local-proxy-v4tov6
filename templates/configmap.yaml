@@ -25,7 +25,7 @@ data:
       [ -z "$local_port" ] || [ "${local_port#\#}" != "$local_port" ] && continue
 
       echo "Starting proxy: localhost:$local_port -> [$ipv6_addr]:$remote_port"
-      socat "TCP4-LISTEN:$local_port,bind=127.0.0.1,fork,reuseaddr" "TCP6:[$ipv6_addr]:$remote_port" &
+      socat "TCP4-LISTEN:$local_port,bind=0.0.0.0,fork,reuseaddr" "TCP6:[$ipv6_addr]:$remote_port" &
 
       # Store PID for cleanup
       echo $! >> /tmp/socat.pids

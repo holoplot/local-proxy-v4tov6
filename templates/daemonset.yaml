@@ -42,6 +42,12 @@ spec:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            {{- range .Values.proxies }}
+            - containerPort: {{ .localPort }}
+              protocol: TCP
+              name: port-{{ .localPort }}
+            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /config
