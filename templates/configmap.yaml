@@ -10,9 +10,9 @@ data:
 {{ .Values.proxyConfigRaw | indent 4 }}
 {{- else }}
     # Generated from Helm values
-    # Format: LOCAL_PORT:IPV6_ADDRESS:REMOTE_PORT
+    # Format: LOCAL_PORT,IPV6_ADDRESS,REMOTE_PORT
 {{- range .Values.proxies }}
-    {{ .localPort }}:{{ .ipv6Address }}:{{ .remotePort }}
+    {{ .localPort }},{{ .ipv6Address }},{{ .remotePort }}
 {{- end }}
 {{- end }}
   start-proxies.sh: |
@@ -20,7 +20,7 @@ data:
     echo "Starting IPv4 to IPv6 socat proxies on localhost..."
 
     # Read configuration file
-    while IFS=':' read -r local_port ipv6_addr remote_port; do
+    while IFS=',' read -r local_port ipv6_addr remote_port; do
       # Skip empty lines and comments
       [ -z "$local_port" ] || [ "${local_port#\#}" != "$local_port" ] && continue
 

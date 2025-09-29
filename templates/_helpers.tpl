@@ -49,14 +49,3 @@ Selector labels
 app.kubernetes.io/name: {{ include "local-proxy-v4tov6.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "local-proxy-v4tov6.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "local-proxy-v4tov6.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}

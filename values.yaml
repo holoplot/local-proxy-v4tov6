@@ -64,5 +64,5 @@ affinity: {}
 # Format: array of objects with localPort, ipv6Address, and remotePort
 proxies:
   - localPort: 8080
-    ipv6Address: ::1"
+    ipv6Address: "::1"
     remotePort: 80
